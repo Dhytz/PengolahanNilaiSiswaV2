@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tugas Kelompok 7 - Pengolahan Nilai Siswa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/128/11452/11452716.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="introScreen" aria-hidden="true">
+        <div class="intro-particles" id="introParticles"></div>
+        <div class="intro-logo">Pengolahan Nilai Siswa</div>
+        <div class="intro-sub">Kelompok 7 &nbsp;·&nbsp; Adhitya &nbsp;·&nbsp; Oktaviana &nbsp;·&nbsp; Dina</div>
+        <div class="intro-bar-wrap"><div class="intro-bar"></div></div>
+    </div>
+
+    <button class="theme-toggle" onclick="toggleTheme()" title="Ganti Tema" aria-label="Toggle tema">🌙</button>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">Pengolahan Nilai Siswa</h1>
+            <p class="header-sub">KELOMPOK 7 — Adhitya &nbsp;·&nbsp; Oktaviana &nbsp;·&nbsp; Dina</p>
+        </header>
+
+        <nav class="nav-tabs" id="mainNav">
+            <button class="nav-tab active" onclick="switchTab('tab-sekolah')" data-tab="tab-sekolah">
+                <img src="https://cdn-icons-png.flaticon.com/128/3914/3914826.png"> Sekolah
+            </button>
+            <button class="nav-tab" onclick="switchTab('tab-siswa')" data-tab="tab-siswa">
+                <img src="https://cdn-icons-png.flaticon.com/128/1001/1001371.png"> Data Siswa
+            </button>
+            <button class="nav-tab" onclick="switchTab('tab-mapel')" data-tab="tab-mapel">
+                <img src="https://cdn-icons-png.flaticon.com/128/10489/10489515.png"> Mapel &amp; Guru
+            </button>
+            <button class="nav-tab" onclick="switchTab('tab-nilai')" data-tab="tab-nilai">
+                <img src="https://cdn-icons-png.flaticon.com/128/3917/3917559.png"> Input Nilai
+            </button>
+            <button class="nav-tab" onclick="switchTab('tab-leger')" data-tab="tab-leger">
+                <img src="https://cdn-icons-png.flaticon.com/128/831/831375.png"> Daftar Nilai
+            </button>
+        </nav>
+
+        <!-- TAB SEKOLAH -->
+        <div id="tab-sekolah" class="panel active">
+            <div class="card">
+                <h2 class="section-title">
+                    <span class="icon"><img src="https://cdn-icons-png.flaticon.com/128/16769/16769685.png" style="width:30px;height:30px;margin-top:8px;"></span>
+                    Pengaturan Informasi Sekolah
+                </h2>
+                <div class="sekolah-info-banner">
+                    ℹ️ Data ini akan tampil di<span>kop rapor resmi</span>saat cetak. Isi selengkap mungkin.
+                </div>
+                <div class="input-group">
+                    <!-- LOGO UPLOAD -->
+                    <div>
+                        <p class="label-sm">Logo Sekolah</p>
+                        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                            <div id="logoPreviewWrap" style="width:72px;height:72px;border-radius:50%;border:2px dashed var(--glass-border);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--input-bg);flex-shrink:0;cursor:pointer;" onclick="document.getElementById('logoUploadInput').click()">
+                                <img id="logoPreviewImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                                <span id="logoPreviewText" style="font-size:0.58rem;color:var(--text-muted);text-align:center;padding:6px;">Logo<br>Sekolah</span>
+                            </div>
+                            <div style="flex:1;">
+                                <input type="file" id="logoUploadInput" accept="image/*" style="display:none;" onchange="handleLogoUpload(this)">
+                                <button class="btn-action btn-edit" onclick="document.getElementById('logoUploadInput').click()" style="margin-bottom:8px;">&#128193; Pilih Logo</button>
+                                <button class="btn-action" id="logoHapusBtn" onclick="hapusLogo()" style="display:none;margin-left:6px;margin-bottom:8px;">&#x2715; Hapus Logo</button>
+                                <p class="input-hint">Format: JPG, PNG, SVG. Maks 2MB.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div>
+                            <p class="label-sm">NPSN (Nomor Pokok Sekolah Nasional)</p>
+                            <input type="text" id="sekolahNPSN" placeholder="Masukkan NPSN" maxlength="8"
+                                oninput="filterAngka(this)" onblur="validasiAngka(this,'NPSN')">
+                            <p class="input-hint">Maksimal 8 digit angka</p>
+                        </div>
+                        <div>
+                            <p class="label-sm">Nama Sekolah</p>
+                            <input type="text" id="sekolahNama" placeholder="Masukkan Nama Sekolah"
+                                oninput="filterHurufSekolah(this)" onblur="validasiHuruf(this,'Nama Sekolah')">
+                            <p class="input-hint">Hanya huruf, spasi, dan tanda baca nama</p>
+                        </div>
+                        
+                    </div>
+                    <div>
+                        <p class="label-sm">Alamat Sekolah</p>
+                        <input type="text" id="sekolahAlamat" placeholder="Masukkan Alamat Lengkap Sekolah" oninput="filterAlamat(this)">
+                    </div>
+                    <div class="form-grid-2">
+                        <div>
+                            <p class="label-sm">Provinsi</p>
+                            <select id="sekolahProvinsi" onchange="onProvinsiChange()" onblur="validasiHuruf(this,'Provinsi')">
+                                <option value="">— Pilih Provinsi —</option>
+                            </select>
+                        </div>
+                        <div>
+                            <p class="label-sm">Kota / Kabupaten</p>
+                            <select id="sekolahKota" onchange="onKotaChange()" onblur="validasiHuruf(this,'Kota / Kabupaten')" disabled>
+                                <option value="">— Pilih Provinsi terlebih dahulu —</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div>
+                            <p class="label-sm">Kode POS</p>
+                            <select id="sekolahKodePOS" disabled>
+                                <option value="">— Pilih Kota/Kabupaten terlebih dahulu —</option>
+                            </select>
+                        </div>
+                        <div>
+                            <p class="label-sm">Nomor Telepon</p>
+                            <input type="text" id="sekolahTelepon" placeholder="Masukkan Nomor Telepon" maxlength="15"
+                                oninput="filterAngka(this)" onblur="validasiAngka(this,'Nomor Telepon')">
+                            <p class="input-hint">Maksimal 15 digit angka</p>
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div>
+                            <p class="label-sm">Email</p>
+                            <input type="email" id="sekolahEmail" placeholder="Masukkan Email Sekolah" oninput="filterEmail(this)" onblur="validasiEmail(this)">
+                            <p class="input-hint">Masukkan email yang valid</p>
+                        </div>
+                        <div>
+                            <p class="label-sm">Website Sekolah</p>
+                            <input type="text" id="sekolahWebsite" placeholder="Masukkan Website Sekolah" oninput="filterWebsite(this)" onblur="validasiWebsite(this)">
+                            <p class="input-hint">Masukkan URL yang valid</p>
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div>
+                            <p class="label-sm">NIP Kepala Sekolah</p>
+                            <input type="text" id="sekolahNIPKepsek" placeholder="Masukkan NIP Kepala Sekolah" maxlength="18"
+                                oninput="filterAngka(this)" onblur="validasiAngka(this,'NIP Kepala Sekolah')">
+                            <p class="input-hint">Maksimal 18 digit angka</p>
+                        </div>
+                        <div>
+                            <p class="label-sm">Nama Kepala Sekolah</p>
+                            <input type="text" id="sekolahKepsek" placeholder="Masukkan Nama Kepala Sekolah"
+                                oninput="filterNama(this)" onblur="validasiHuruf(this,'Nama Kepala Sekolah')">
+                            <p class="input-hint">Hanya huruf dan spasi</p>
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div>
+                            <p class="label-sm">Tahun Pelajaran</p>
+                            <input type="text" id="sekolahTahunPelajaran" placeholder="Masukkan Tahun Pelajaran" value="" oninput="filterTahunPelajaran(this)" onblur="validasiTahunPelajaran(this)">
+                        </div>
+                        <div>
+                            <p class="label-sm">Semester</p>
+                            <select id="sekolahSemester">
+                                <option value="">— Pilih Semester —</option>
+                                <option value="Ganjil">Ganjil (1)</option>
+                                <option value="Genap">Genap (2)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn-cosmic" onclick="simpanInfoSekolah()">Simpan Informasi Sekolah</button>
+                </div>
+            </div>
+
+            <!-- Preview Info Sekolah -->
+            <div class="card" id="sekolahPreviewCard" style="display:none;">
+                <h2 class="section-title" style="margin-bottom:14px;">
+                    <span class="icon"><img src="https://cdn-icons-png.flaticon.com/128/3914/3914636.png" style="width:28px;height:28px;margin-top:6px;"></span>
+                    Preview Kop Rapor
+                </h2>
+                <div id="sekolahPreviewContent" style="border-radius:12px;overflow:hidden;border:1px solid var(--glass-border);"></div>
+            </div>
+        </div>
+
+        <!-- TAB SISWA -->
+        <div id="tab-siswa" class="panel">
+            <div class="card">
+                <h2 class="section-title">
+                    <span class="icon"><img src="https://cdn-icons-png.flaticon.com/128/1001/1001371.png" style="width:30px;height:30px;margin-top:8px;"></span>
+                    Input Data Siswa
+                </h2>
+                <div class="edit-mode-banner" id="siswaBanner">
+                    <span class="edit-mode-text">✏ MODE EDIT — <span id="siswaBannerNama"></span></span>
+                    <button class="edit-mode-cancel" onclick="batalEditSiswa()">✕ Batalkan</button>
+                </div>
+                <div class="input-group">
+                    <div class="form-grid-2">
+                        <div>
+                            <p class="label-sm">NISN (Nomor Induk Siswa Nasional)</p>
+                            <input type="text" id="nisnManual" placeholder="Masukkan NISN"
+                                oninput="filterAngka(this)" onblur="validasiAngka(this,'NISN')" maxlength="10">
+                            <p class="input-hint" id="nisnHint">Maksimal 10 digit angka</p>
+                        </div>
+                        <div>
+                            <p class="label-sm">NIS (Nomor Induk Siswa)</p>
+                            <input type="text" id="nisManual" placeholder="Masukkan NIS"
+                                oninput="filterAngka(this)" onblur="validasiAngka(this,'NIS')" maxlength="12">
+                            <p class="input-hint" id="nisHint">Maksimal 12 digit angka</p>
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div>
+                            <p class="label-sm">Nama Lengkap Siswa</p>
+                            <input type="text" id="nama" placeholder="Masukkan Nama Lengkap"
+                                oninput="filterNama(this)" onblur="validasiHuruf(this,'Nama Siswa')">
+                            <p class="input-hint" id="namaHint">Hanya huruf dan spasi</p>
+                        </div>
+                        <div>
+                            <p class="label-sm">Kelas</p>
+                            <select id="kelasManual">
+                                <option value="">— Pilih Kelas —</option>
+                                <option>X MIPA 1</option><option>X MIPA 2</option><option>X MIPA 3</option><option>X MIPA 4</option><option>X MIPA 5</option><option>X MIPA 6</option><option>X MIPA 7</option><option>X MIPA 8</option><option>X MIPA 9</option><option>X MIPA 10</option>
+                                <option>XI MIPA 1</option><option>XI MIPA 2</option><option>XI MIPA 3</option><option>XI MIPA 4</option><option>XI MIPA 5</option><option>XI MIPA 6</option><option>XI MIPA 7</option><option>XI MIPA 8</option><option>XI MIPA 9</option><option>XI MIPA 10</option>
+                                <option>XII MIPA 1</option><option>XII MIPA 2</option><option>XII MIPA 3</option><option>XII MIPA 4</option><option>XII MIPA 5</option><option>XII MIPA 6</option><option>XII MIPA 7</option><option>XII MIPA 8</option><option>XII MIPA 9</option><option>XII MIPA 10</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div>
+                            <p class="label-sm">Nama Wali Kelas</p>
+                            <input type="text" id="waliKelas" placeholder="Masukkan Nama Wali Kelas"
+                                oninput="filterNama(this)">
+                            <p class="input-hint" id="waliKelasHint">Hanya huruf dan spasi</p>
+                        </div>
+                        <div>
+                            <p class="label-sm">Jumlah Mata Pelajaran</p>
+                            <input type="number" id="jumlahNilai" value="01" min="1" max="25">
+                            <p class="input-hint" id="jumlahNilaiHint">Maksimal 25 mata pelajaran</p>
+                        </div>
+                    </div>
+
+                    <!-- KEHADIRAN -->
+                    <div class="nilai-section">
+                        <p class="nilai-section-title">Data Kehadiran</p>
+                        <div class="form-grid-4">
+                            <div>
+                                <p class="label-sm">Hadir (hari)</p>
+                                <input type="text" id="hadirSiswa" placeholder="0"
+                                    oninput="filterAngka(this)" maxlength="4">
+                            </div>
+                            <div>
+                                <p class="label-sm">Sakit (hari)</p>
+                                <input type="text" id="sakitSiswa" placeholder="0"
+                                    oninput="filterAngka(this)" maxlength="3">
+                            </div>
+                            <div>
+                                <p class="label-sm">Izin (hari)</p>
+                                <input type="text" id="izinSiswa" placeholder="0"
+                                    oninput="filterAngka(this)" maxlength="3">
+                            </div>
+                            <div>
+                                <p class="label-sm">Alpha (hari)</p>
+                                <input type="text" id="alphaSiswa" placeholder="0"
+                                    oninput="filterAngka(this)" maxlength="3">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="label-sm">Catatan Wali Kelas</p>
+                        <input type="text" id="catatanSiswa" placeholder="Masukkan catatan wali kelas (jika ada)">
+                    </div>
+
+                    <div id="nilaiInputs" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;"></div>
+                    <button class="btn-cosmic" id="btnSiswaSubmit" onclick="processAnalysis()">Analisis &amp; Simpan Data Siswa</button>
+                </div>
+            </div>
+
+            <div class="card results" id="results">
+                <h2 class="section-title">
+                    <span class="icon"><img src="https://cdn-icons-png.flaticon.com/128/19021/19021113.png" style="width:30px;height:30px;margin-top:8px;"></span>
+                    Laporan Nilai Siswa
+                </h2>
+                <div id="statusTag" class="status-header"></div>
+                <div class="progress-bar-container"><div class="progress-fill" id="bar"></div></div>
+                <div id="resultContent" class="result-grid"></div>
+            </div>
+
+            <div class="card">
+                <h2 class="section-title" style="margin-bottom:14px;">
+                    <span class="icon"><img src="https://cdn-icons-png.flaticon.com/128/10470/10470567.png" style="width:28px;height:28px;margin-top:6px;"></span>
+                    Daftar Siswa Tersimpan
+                </h2>
+                <div class="table-controls">
+                    <div class="table-controls-left">
+                        <span class="entries-label">Tampilkan</span>
+                        <select class="entries-select" id="siswaEntriesPerPage" onchange="siswaPage=1;renderSiswaTable()">
+                            <option value="5">5</option><option value="10" selected>10</option><option value="25">25</option><option value="50">50</option><option value="9999">Semua</option>
+                        </select>
+                        <span class="entries-label">Kelas</span>
+                        <select class="filter-select" id="siswaFilterKelas" onchange="siswaPage=1;renderSiswaTable()">
+                            <option value="">— Semua Kelas —</option>
+                            <option>X MIPA 1</option><option>X MIPA 2</option><option>X MIPA 3</option><option>X MIPA 4</option><option>X MIPA 5</option><option>X MIPA 6</option><option>X MIPA 7</option><option>X MIPA 8</option><option>X MIPA 9</option><option>X MIPA 10</option>
+                            <option>XI MIPA 1</option><option>XI MIPA 2</option><option>XI MIPA 3</option><option>XI MIPA 4</option><option>XI MIPA 5</option><option>XI MIPA 6</option><option>XI MIPA 7</option><option>XI MIPA 8</option><option>XI MIPA 9</option><option>XI MIPA 10</option>
+                            <option>XII MIPA 1</option><option>XII MIPA 2</option><option>XII MIPA 3</option><option>XII MIPA 4</option><option>XII MIPA 5</option><option>XII MIPA 6</option><option>XII MIPA 7</option><option>XII MIPA 8</option><option>XII MIPA 9</option><option>XII MIPA 10</option>
+                        </select>
+                        <span class="entries-label">Urutan</span>
+                        <select class="filter-select" id="siswaSort" onchange="siswaPage=1;renderSiswaTable()">
+                            <option value="nis-az">NIS 0 → 9</option><option value="nis-za">NIS 9 → 0</option>
+                            <option value="nama-az">Nama A → Z</option><option value="nama-za">Nama Z → A</option>
+                            <option value="kelas-az">Kelas 0 → 10</option><option value="kelas-za">Kelas 10 → 0</option>
+                            <option value="terbaru">Data Terbaru</option><option value="terlama">Data Terlama</option>
+                        </select>
+                    </div>
+                    <div class="table-controls-right">
+                        <div class="search-input-wrap">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="siswaSearchInput" placeholder="Cari NIS / Nama / Kelas" oninput="siswaPage=1;renderSiswaTable()">
+                        </div>
+                    </div>
+                </div>
+                <div class="data-table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th>NO</th><th>NISN</th><th>NIS</th><th>Nama Siswa</th><th>Kelas</th><th>Wali Kelas</th><th>Aksi</th></tr></thead>
+                        <tbody id="siswaTableBody">
+                            <tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon"><img src="https://cdn-icons-png.flaticon.com/128/18556/18556907.png" width="50px"></div><div class="empty-state-text">Belum ada data siswa</div></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="showing-info" id="siswaShowingInfo"></div>
+                <div class="pagination-wrap" id="siswaPagination"></div>
+            </div>
+        </div>
+
+        <!-- TAB MAPEL -->
+        <div id="tab-mapel" class="panel">
+            <div class="card">
+                <h2 class="section-title">
+                    <span class="icon"><img src="https://cdn-icons-png.flaticon.com/128/10489/10489515.png" style="width:30px;height:30px;margin-top:8px;"></span>
+                    Input Data Mata Pelajaran &amp; Guru
+                </h2>
+                <div class="edit-mode-banner" id="mapelBanner">
+                    <span class="edit-mode-text">✏ MODE EDIT — <span id="mapelBannerNama"></span></span>
+                    <button class="edit-mode-cancel" onclick="batalEditMapel()">✕ Batalkan</button>
+                </div>
+                <div class="form-grid-2" style="margin-bottom:14px;">
+                    <div>
+                        <p class="label-sm">Nama Mata Pelajaran</p>
+                        <input type="text" id="namaMapel" placeholder="Masukkan Nama Mata Pelajaran"
+                            oninput="filterHurufSekolah(this)" onblur="validasiHuruf(this,'Nama Mata Pelajaran')">
+                        <p class="input-hint">Hanya huruf, angka Romawi, spasi, titik</p>
+                    </div>
+                    <div>
+                        <p class="label-sm">NIP (Nomor Induk Pegawai)</p>
+                        <input type="text" id="nipGuru" placeholder="Masukkan NIP Guru" maxlength="18"
+                            oninput="filterAngka(this)" onblur="validasiAngka(this,'NIP')">
+                        <p class="input-hint">Maksimal 18 karakter</p>
+                    </div>
+                </div>
+                <div class="form-grid-2" style="margin-bottom:14px;">
+                    <div>
+                        <p class="label-sm">Nama Guru Pengampu</p>
+                        <input type="text" id="namaGuru" placeholder="Masukkan Nama Guru"
+                            oninput="filterNama(this)" onblur="validasiHuruf(this,'Nama Guru')">
+                        <p class="input-hint">Hanya huruf dan spasi</p>
+                    </div>
+                    <div>
+                        <p class="label-sm">Pilih Kelas</p>
+                        <select id="kelasMapel">
+                            <option value="">— Pilih Kelas —</option>
+                            <option>X MIPA 1</option><option>X MIPA 2</option><option>X MIPA 3</option><option>X MIPA 4</option><option>X MIPA 5</option><option>X MIPA 6</option><option>X MIPA 7</option><option>X MIPA 8</option><option>X MIPA 9</option><option>X MIPA 10</option>
+                            <option>XI MIPA 1</option><option>XI MIPA 2</option><option>XI MIPA 3</option><option>XI MIPA 4</option><option>XI MIPA 5</option><option>XI MIPA 6</option><option>XI MIPA 7</option><option>XI MIPA 8</option><option>XI MIPA 9</option><option>XI MIPA 10</option>
+                            <option>XII MIPA 1</option><option>XII MIPA 2</option><option>XII MIPA 3</option><option>XII MIPA 4</option><option>XII MIPA 5</option><option>XII MIPA 6</option><option>XII MIPA 7</option><option>XII MIPA 8</option><option>XII MIPA 9</option><option>XII MIPA 10</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <div>
+                        <p class="label-sm">KKM (Kriteria Ketuntasan Minimal)</p>
+                        <input type="number" id="kkm" placeholder="Masukkan KKM" min="1" max="100" oninput="filterAngka(this)" onblur="validasiKKM(this)" >
+                        <p class="input-hint">Angka 1–100</p>
+                    </div>
+                </div>
+                <button class="btn-cosmic" id="btnMapelSubmit" onclick="tambahMapel()">Simpan Mata Pelajaran &amp; Guru</button>
+
+                <div style="margin-top:28px;">
+                    <p class="nilai-section-title" style="font-size:0.68rem;letter-spacing:2.5px;color:var(--text-muted);text-transform:uppercase;margin-bottom:14px;font-weight:700;">Daftar Mata Pelajaran & Guru Tersimpan</p>
+                    <div class="table-controls">
+                        <div class="table-controls-left">
+                            <span class="entries-label">Tampilkan</span>
+                            <select class="entries-select" id="mapelEntriesPerPage" onchange="mapelPage=1;renderMapelList()">
+                                <option value="5">5</option><option value="10" selected>10</option><option value="25">25</option><option value="9999">Semua</option>
+                            </select>
+                            <span class="entries-label">Kelas</span>
+                            <select class="filter-select" id="mapelFilterKelas" onchange="mapelPage=1;renderMapelList()">
+                                <option value="">— Semua —</option>
+                                <option>X MIPA 1</option><option>X MIPA 2</option><option>X MIPA 3</option><option>X MIPA 4</option><option>X MIPA 5</option><option>X MIPA 6</option><option>X MIPA 7</option><option>X MIPA 8</option><option>X MIPA 9</option><option>X MIPA 10</option>
+                                <option>XI MIPA 1</option><option>XI MIPA 2</option><option>XI MIPA 3</option><option>XI MIPA 4</option><option>XI MIPA 5</option><option>XI MIPA 6</option><option>XI MIPA 7</option><option>XI MIPA 8</option><option>XI MIPA 9</option><option>XI MIPA 10</option>
+                                <option>XII MIPA 1</option><option>XII MIPA 2</option><option>XII MIPA 3</option><option>XII MIPA 4</option><option>XII MIPA 5</option><option>XII MIPA 6</option><option>XII MIPA 7</option><option>XII MIPA 8</option><option>XII MIPA 9</option><option>XII MIPA 10</option>
+                            </select>
+                            <span class="entries-label">Urutan</span>
+                            <select class="filter-select" id="mapelSort" onchange="mapelPage=1;renderMapelList()">
+                                <option value="nama-az">Nama A → Z</option><option value="nama-za">Nama Z → A</option>
+                                <option value="guru-az">Guru A → Z</option><option value="guru-za">Guru Z → A</option>
+                                <option value="nip-az">NIP 0→9</option><option value="nip-za">NIP 9→0</option>
+                                <option value="kkm-tinggi">KKM Tinggi</option><option value="kkm-rendah">KKM Rendah</option>
+                                <option value="terbaru"> Data Terbaru</option><option value="terlama">Data Terlama</option>
+                            </select>
+                        </div>
+                        <div class="table-controls-right">
+                            <div class="search-input-wrap">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="mapelSearchInput" placeholder="Cari Mapel / Guru / NIP" oninput="mapelPage=1;renderMapelList()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mapel-list" id="mapelList">
+                        <div class="empty-state" style="padding:30px;"><div class="empty-state-icon"><img src="https://cdn-icons-png.flaticon.com/128/9585/9585435.png" width="50px"/></div><div class="empty-state-text">Belum ada mata pelajaran</div></div>
+                    </div>
+                    <div class="showing-info" id="mapelShowingInfo"></div>
+                    <div class="pagination-wrap" id="mapelPagination"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB NILAI -->
+        <div id="tab-nilai" class="panel">
+            <div class="card">
+                <h2 class="section-title">
+                    <span class="icon"><img src="https://cdn-icons-png.flaticon.com/128/3917/3917559.png" style="width:30px;height:30px;margin-top:8px;"></span>
+                    Input Nilai Siswa
+                </h2>
+                <div class="edit-mode-banner" id="nilaiBanner">
+                    <span class="edit-mode-text">✏ MODE EDIT NILAI</span>
+                    <button class="edit-mode-cancel" onclick="batalEditNilai()">✕ Batalkan</button>
+                </div>
+                <div class="nilai-section">
+                    <p class="nilai-section-title">Bobot Penilaian</p>
+                    <div class="bobot-info">
+                        <div class="bobot-chip">Tugas <span>30%</span></div>
+                        <div class="bobot-chip">UTS <span>30%</span></div>
+                        <div class="bobot-chip">UAS <span>40%</span></div>
+                        <div class="bobot-chip">Nilai Akhir = <span>(Tugas × 0.3) + (UTS × 0.3) + (UAS × 0.4)</span></div>
+                    </div>
+                </div>
+                <div class="form-grid-2" style="margin-bottom:14px;">
+                    <div>
+                        <p class="label-sm">Pilih Siswa</p>
+                        <select id="nilaiSiswaSelect"><option value="">— Pilih Siswa —</option></select>
+                    </div>
+                    <div>
+                        <p class="label-sm">Pilih Mata Pelajaran</p>
+                        <select id="nilaiMapelSelect" onchange="previewNilai()"><option value="">— Pilih Mata Pelajaran —</option></select>
+                    </div>
+                </div>
+                <div class="form-grid-3" style="margin-bottom:14px;">
+                    <div>
+                        <p class="label-sm">Nilai Tugas (0–100)</p>
+                        <input type="number" id="nilaiTugas" placeholder="0–100" min="0" max="100" oninput="previewNilai()">
+                    </div>
+                    <div>
+                        <p class="label-sm">Nilai UTS (0–100)</p>
+                        <input type="number" id="nilaiUTS" placeholder="0–100" min="0" max="100" oninput="previewNilai()">
+                    </div>
+                    <div>
+                        <p class="label-sm">Nilai UAS (0–100)</p>
+                        <input type="number" id="nilaiUAS" placeholder="0–100" min="0" max="100" oninput="previewNilai()">
+                    </div>
+                </div>
+                <div id="previewNilaiAkhir" style="display:none;background:rgba(0,242,255,0.06);border:1px solid rgba(0,242,255,0.2);border-radius:14px;padding:14px 18px;margin-bottom:14px;">
+                    <div style="display:flex;gap:22px;flex-wrap:wrap;align-items:center;">
+                        <div><span style="font-size:0.62rem;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;">Nilai Akhir</span><div id="prevNilaiAkhir" style="font-size:1.6rem;font-weight:900;font-family:'Space Grotesk',sans-serif;">—</div></div>
+                        <div><span style="font-size:0.62rem;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;">Predikat</span><div id="prevPredikat" style="font-size:1.2rem;font-weight:800;color:var(--accent-purple);">—</div></div>
+                        <div><span style="font-size:0.62rem;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;">Status KKM</span><div id="prevKKM" style="font-size:0.9rem;font-weight:700;">—</div><div id="prevKKMVal" style="font-size:0.65rem;color:var(--text-muted);margin-top:2px;"></div></div>
+                    </div>
+                </div>
+                <button class="btn-cosmic" id="btnNilaiSubmit" onclick="simpanNilai()">Simpan Nilai</button>
+            </div>
+
+            <div class="card">
+                <h2 class="section-title" style="margin-bottom:14px;">
+                    <span class="icon"><img src="https://cdn-icons-png.flaticon.com/128/10786/10786354.png" style="width:28px;height:28px;margin-top:6px;"></span>
+                    Daftar Nilai Tersimpan
+                </h2>
+                <div class="table-controls">
+                    <div class="table-controls-left">
+                        <span class="entries-label">Tampilkan</span>
+                        <select class="entries-select" id="nilaiEntriesPerPage" onchange="nilaiPage=1;renderNilaiTable()">
+                            <option value="5">5</option><option value="10" selected>10</option><option value="25">25</option><option value="9999">Semua</option>
+                        </select>
+                        <span class="entries-label">Predikat</span>
+                        <select class="filter-select" id="nilaiFilterPredikat" onchange="nilaiPage=1;renderNilaiTable()">
+                            <option value="">— Semua Predikat —</option>
+                            <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                            <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+                        </select>
+                        <span class="entries-label">Urutan</span>
+                        <select class="filter-select" id="nilaiSort" onchange="nilaiPage=1;renderNilaiTable()">
+                            <option value="nis-az">NIS 0→9</option><option value="nis-za">NIS 9→0</option>
+                            <option value="siswa-az">Nama A→Z</option><option value="siswa-za">Nama Z→A</option>
+                            <option value="nilai-tinggi">Nilai Tertinggi</option><option value="nilai-rendah">Nilai Terendah</option>
+                            <option value="terbaru">Data Terbaru</option><option value="terlama">Data Terlama</option>
+                        </select>
+                    </div>
+                    <div class="table-controls-right">
+                        <div class="search-input-wrap">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="nilaiSearchInput" placeholder="Cari NIS / Nama / Mapel" oninput="nilaiPage=1;renderNilaiTable()">
+                        </div>
+                    </div>
+                </div>
+                <div class="data-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>No</th><th>NISN</th><th>NIS</th><th>Nama Siswa</th><th>Kelas</th><th>Mata Pelajaran</th><th>Tugas</th><th>UTS</th><th>UAS</th><th>Nilai Akhir</th><th>Predikat</th><th>Aksi</th></tr>
+                        </thead>
+                        <tbody id="nilaiTableBody">
+                            <tr><td colspan="12"><div class="empty-state"><div class="empty-state-icon"><img src="https://cdn-icons-png.flaticon.com/128/10786/10786354.png" width="50px"/></div><div class="empty-state-text">Belum ada nilai tersimpan</div></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="showing-info" id="nilaiShowingInfo"></div>
+                <div class="pagination-wrap" id="nilaiPagination"></div>
+            </div>
+        </div>
+
+        <!-- TAB LEGER -->
+        <div id="tab-leger" class="panel">
+            <div class="card">
+                <h2 class="section-title">
+                    <span class="icon"><img src="https://cdn-icons-png.flaticon.com/128/831/831375.png" style="width:30px;height:30px;margin-top:8px;"></span>
+                    Rekap Daftar Nilai Siswa
+                </h2>
+                <div class="stat-row">
+                    <div class="stat-box"><div class="stat-label">Total Siswa</div><div class="stat-val" id="statTotalSiswa">0</div><div class="stat-kelas-label" id="statKelasLabel"></div></div>
+                    <div class="stat-box"><div class="stat-label">Rata-rata Kelas</div><div class="stat-val" id="statRataKelas">—</div></div>
+                    <div class="stat-box"><div class="stat-label">Nilai Tertinggi</div><div class="stat-val purple" id="statTertinggi">—</div></div>
+                    <div class="stat-box"><div class="stat-label">Lulus KKM</div><div class="stat-val" id="statLulus" style="color:var(--lulus-color);">—</div></div>
+                </div>
+                <div class="leger-header">
+                    <p style="font-size:0.68rem;letter-spacing:2.5px;color:var(--text-muted);text-transform:uppercase;font-weight:700;margin:0;">Tabel Rekap Daftar Nilai Semua Siswa</p>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn-export btn-green" onclick="bukaModalExport()">⬇ Ekspor</button>
+                        <button class="btn-export btn-dark" onclick="cetakRaporSemua()">🖨 Cetak Semua Rapor</button>
+                    </div>
+                </div>
+
+                <div class="table-controls">
+                    <div class="table-controls-left">
+                        <span class="entries-label">Tampilkan</span>
+                        <select class="entries-select" id="legerEntriesPerPage" onchange="legerPage=1;renderLeger()">
+                            <option value="5">5</option><option value="10" selected>10</option><option value="25">25</option><option value="50">50</option><option value="9999">Semua</option>
+                        </select>
+                        <span class="entries-label">Kelas</span>
+                        <select class="filter-select" id="legerFilterKelas" onchange="legerPage=1;renderLeger()">
+                            <option value="">— Semua Kelas —</option>
+                            <option>X MIPA 1</option><option>X MIPA 2</option><option>X MIPA 3</option><option>X MIPA 4</option><option>X MIPA 5</option><option>X MIPA 6</option><option>X MIPA 7</option><option>X MIPA 8</option><option>X MIPA 9</option><option>X MIPA 10</option>
+                            <option>XI MIPA 1</option><option>XI MIPA 2</option><option>XI MIPA 3</option><option>XI MIPA 4</option><option>XI MIPA 5</option><option>XI MIPA 6</option><option>XI MIPA 7</option><option>XI MIPA 8</option><option>XI MIPA 9</option><option>XI MIPA 10</option>
+                            <option>XII MIPA 1</option><option>XII MIPA 2</option><option>XII MIPA 3</option><option>XII MIPA 4</option><option>XII MIPA 5</option><option>XII MIPA 6</option><option>XII MIPA 7</option><option>XII MIPA 8</option><option>XII MIPA 9</option><option>XII MIPA 10</option>
+                        </select>
+                        <select class="filter-select" id="legerFilterPredikat" onchange="legerPage=1;renderLeger()">
+                            <option value="">— Semua Predikat —</option>
+                            <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                            <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+                        </select>
+                    </div>
+                    <div class="table-controls-right">
+                        <span class="entries-label">Urutan</span>
+                        <select class="filter-select leger-sort-select" id="legerSort" onchange="legerPage=1;renderLeger()">
+                            <option value="nis-az">NIS 0→9</option><option value="nis-za">NIS 9→0</option>
+                            <option value="nama-az">Nama A→Z</option><option value="nama-za">Nama Z→A</option>
+                            <option value="kelas-az">Kelas 0→10</option><option value="kelas-za">Kelas 10→0</option>
+                            <option value="nilai-tinggi">Nilai Tertinggi</option><option value="nilai-rendah">Nilai Terendah</option>
+                            <option value="terbaru">Data Terbaru</option><option value="terlama">Data Terlama</option>
+                        </select>
+                    </div>
+                    <div class="table-controls-right">
+                        <div class="search-input-wrap">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="legerSearchInput" placeholder="Cari NIS / Nama / Kelas" oninput="legerPage=1;renderLeger()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="data-table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th>NO</th><th>NISN</th><th>NIS</th><th>Nama Siswa</th><th>Kelas</th><th>Rata-rata</th><th>Predikat</th><th>Aksi</th></tr></thead>
+                        <tbody id="legerBody">
+                            <tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon"><img src="https://cdn-icons-png.flaticon.com/128/16312/16312812.png" width="50px"/></div><div class="empty-state-text">Belum ada data siswa &amp; nilai</div></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="showing-info" id="legerShowingInfo"></div>
+                <div class="pagination-wrap" id="legerPagination"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div>
+                <div class="footer-logo">Pengolahan Nilai Siswa</div>
+                <p class="footer-desc">Sistem Pengolahan Nilai Siswa berbasis web. Dirancang untuk memudahkan pencatatan, analisis, dan pelaporan hasil belajar siswa secara digital.</p>
+                <div class="footer-tagline"><span class="footer-tagline-dot"></span>Sistem Aktif</div>
+            </div>
+            <div>
+                <span class="footer-col-title">Anggota Kelompok 7</span>
+                <div class="footer-member"><span class="footer-member-dot"></span> Adhitya Christian Syah (2247101169)</div>
+                <div class="footer-member"><span class="footer-member-dot"></span> Oktaviana Wahyu Ramadhan (2247101162)</div>
+                <div class="footer-member"><span class="footer-member-dot"></span> Dina Revalina Olyviaputri (2247101165)</div>
+            </div>
+            <div>
+                <span class="footer-col-title">Informasi</span>
+                <div class="footer-info-row"><span class="footer-info-icon">📚</span><span>Sistem Pengolahan Nilai Siswa</span></div>
+                <div class="footer-info-row"><span class="footer-info-icon">⚖️</span><span>Bobot: Tugas 30% · UTS 30% · UAS 40%</span></div>
+                <div class="footer-info-row"><span class="footer-info-icon">🏆</span><span>Predikat: A≥90 · B≥80 · C≥70 · D≥60 · E≥50 · F&lt;50</span></div>
+                <div class="footer-info-row"><span class="footer-info-icon">🎯</span><span>KKM Default: 75 — Nilai ≥ KKM = Lulus</span></div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p class="footer-copy">© 2026 <span>Kelompok 7</span> · Pengolahan Nilai Siswa. All rights reserved.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <div class="footer-chip">🎓 Sistem Akademik</div>
+                <div class="footer-chip">💾 Data Tersimpan Lokal</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL RAPOR -->
+    <div class="modal-overlay" id="modalRapor">
+        <div class="modal-box" style="max-width:700px;">
+            <button class="modal-close" onclick="tutupRapor()">✕</button>
+            <div id="modalRaporContent"></div>
+            <div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap;">
+                <button class="btn-export" style="flex:1;" onclick="printRapor()">🖨 Cetak Rapor Formal</button>
+                <button class="btn-export btn-dark" style="flex:1;" onclick="tutupRapor()">✕ Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EXPORT -->
+    <div class="modal-overlay" id="modalExport">
+        <div class="modal-box" style="max-width:520px;">
+            <button class="modal-close" onclick="tutupExport()">✕</button>
+            <div style="margin-bottom:22px;">
+                <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--text);margin-bottom:6px;">Export Data Nilai</div>
+                <div style="font-size:0.72rem;color:var(--text-muted);letter-spacing:1px;">Pilih format dan cakupan data yang ingin diekspor</div>
+            </div>
+            <div style="height:1px;background:linear-gradient(to right,transparent,var(--glass-border),transparent);margin-bottom:22px;"></div>
+            <p class="export-section-title">Format Ekspor</p>
+            <div class="export-option-grid" style="margin-bottom:22px;">
+                <div class="export-option-btn selected" id="exportBtnCSV" onclick="pilihExportFormat('csv')">
+                    <div class="export-option-icon">📄</div>
+                    <div class="export-option-label">CSV (.csv)</div>
+                    <div class="export-option-desc">File teks biasa, mudah diolah</div>
+                </div>
+                <div class="export-option-btn" id="exportBtnXLSX" onclick="pilihExportFormat('xlsx')">
+                    <div class="export-option-icon">📊</div>
+                    <div class="export-option-label">Excel (.xlsx)</div>
+                    <div class="export-option-desc">Format Microsoft Excel</div>
+                </div>
+                <div class="export-option-btn" id="exportBtnPDF" onclick="pilihExportFormat('pdf')">
+                    <div class="export-option-icon">🖨</div>
+                    <div class="export-option-label">Rapor PDF</div>
+                    <div class="export-option-desc">Cetak rapor formal sekolah</div>
+                </div>
+            </div>
+            <p class="export-section-title">Cakupan Data</p>
+            <div class="export-option-grid" style="margin-bottom:22px;">
+                <div class="export-option-btn selected" id="exportBtnSemua" onclick="pilihExportScope('semua')">
+                    <div class="export-option-icon">👥</div>
+                    <div class="export-option-label">Semua Siswa</div>
+                    <div class="export-option-desc">Ekspor seluruh data siswa</div>
+                </div>
+                <div class="export-option-btn" id="exportBtnKelas" onclick="pilihExportScope('kelas')">
+                    <div class="export-option-icon">🏫</div>
+                    <div class="export-option-label">Per Kelas</div>
+                    <div class="export-option-desc">Ekspor per kelas tertentu</div>
+                </div>
+                <div class="export-option-btn" id="exportBtnSiswa" onclick="pilihExportScope('siswa')">
+                    <div class="export-option-icon">👤</div>
+                    <div class="export-option-label">Per Siswa</div>
+                    <div class="export-option-desc">Ekspor siswa tertentu</div>
+                </div>
+            </div>
+            <div id="exportKelasWrap" style="display:none;margin-bottom:18px;">
+                <p class="label-sm">Pilih Kelas</p>
+                <select id="exportKelasSelect" style="margin-top:8px;">
+                    <option value="">— Pilih Kelas —</option>
+                    <option>X MIPA 1</option><option>X MIPA 2</option><option>X MIPA 3</option><option>X MIPA 4</option><option>X MIPA 5</option><option>X MIPA 6</option><option>X MIPA 7</option><option>X MIPA 8</option><option>X MIPA 9</option><option>X MIPA 10</option>
+                    <option>XI MIPA 1</option><option>XI MIPA 2</option><option>XI MIPA 3</option><option>XI MIPA 4</option><option>XI MIPA 5</option><option>XI MIPA 6</option><option>XI MIPA 7</option><option>XI MIPA 8</option><option>XI MIPA 9</option><option>XI MIPA 10</option>
+                    <option>XII MIPA 1</option><option>XII MIPA 2</option><option>XII MIPA 3</option><option>XII MIPA 4</option><option>XII MIPA 5</option><option>XII MIPA 6</option><option>XII MIPA 7</option><option>XII MIPA 8</option><option>XII MIPA 9</option><option>XII MIPA 10</option>
+                </select>
+            </div>
+            <div id="exportSiswaWrap" style="display:none;margin-bottom:18px;">
+                <p class="label-sm">Pilih Siswa</p>
+                <select id="exportSiswaSelect" style="margin-top:8px;"><option value="">— Pilih Siswa —</option></select>
+            </div>
+            <button class="btn-cosmic" style="margin-top:0;" onclick="doExport()">Export Sekarang</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
